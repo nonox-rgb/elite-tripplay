@@ -12,13 +12,13 @@ const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./css/style.css",
-  "./js/app.js",
-  "./js/i18n.js",
-  "./icons/icon-96.png",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png",
+  "./style.css",
+  "./app.js",
+  "./i18n.js",
+  "./icon-96.png",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./apple-touch-icon.png",
 ];
 
 self.addEventListener("install", (event) => {
