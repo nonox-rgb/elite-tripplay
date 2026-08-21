@@ -171,6 +171,76 @@
 </section>
 
 <!-- ============================================================
+     ECRAN 3 — Mon Voyage (Trip Tracker)
+     ============================================================ -->
+<section class="screen" id="screen-trip">
+
+  <div class="trip2-header">
+    <h1 id="trip2Title">Mon Voyage</h1>
+    <button class="trip-tracker-btn trip2-btn" id="trip2RefreshBtn">TRIP TRACKER</button>
+  </div>
+
+  <div class="trip2-stats">
+    <div class="trip2-stat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM5 13l1.5-5A2 2 0 0 1 8.4 6.5h7.2a2 2 0 0 1 1.9 1.5L19 13H5Z"/></svg>
+      <span id="trip2Vehicle">Clio 5</span>
+    </div>
+    <div class="trip2-stat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <span id="trip2DurationLabel">Duration <span id="trip2Duration">--h --m</span></span>
+    </div>
+    <div class="trip2-stat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.4 7-12a7 7 0 1 0-14 0c0 5.6 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      <span id="trip2DistanceLabel">Distance <span id="trip2Distance">---- km</span></span>
+    </div>
+  </div>
+
+  <div class="trip2-remaining">
+    <p class="trip2-remaining-label" id="trip2RemainingLabel">Time Remaining</p>
+    <p class="trip2-remaining-value" id="trip2RemainingValue">2h 56m</p>
+  </div>
+
+  <div class="trip2-progress">
+    <div class="trip2-endpoint">
+      <span class="trip2-endpoint-label" id="trip2DepartureLabel">Departure</span>
+      <span class="trip2-endpoint-time" id="trip2DepTime">--:--</span>
+    </div>
+    <div class="trip2-track">
+      <div class="trip2-track-fill" style="--progress:0%"></div>
+      <span class="trip2-dot start"></span>
+      <span class="trip2-dot end"></span>
+    </div>
+    <div class="trip2-endpoint right">
+      <span class="trip2-endpoint-label" id="trip2ArrivalLabel">Arrival</span>
+      <span class="trip2-endpoint-time" id="trip2ArrTime">--:--</span>
+    </div>
+  </div>
+
+  <div class="trip2-globe-wrap">
+    <div class="trip2-globe">
+      <div class="globe-blob b1"></div>
+      <div class="globe-blob b2"></div>
+      <div class="globe-blob b3"></div>
+
+      <svg class="trip2-route" viewBox="0 0 1000 500" preserveAspectRatio="none">
+        <path d="M 220 300 Q 550 100 850 400" fill="none" stroke="#ffffff" stroke-width="3" />
+        <circle cx="220" cy="300" r="7" fill="#ffffff" />
+        <circle cx="850" cy="400" r="7" fill="#ffffff" />
+      </svg>
+
+      <div class="globe-label" style="left:22%; top:52%;">
+        <span class="globe-code">----</span>
+        <span id="trip2DepCity">Berlin</span>
+      </div>
+      <div class="globe-label" style="left:87%; top:74%;">
+        <span class="globe-code">----</span>
+      </div>
+      <div class="globe-caption" style="left:8%; top:82%;" id="trip2ArrCity">Madrid</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
      Barre du bas — commune aux deux écrans
      ============================================================ -->
 <nav class="bottombar">
