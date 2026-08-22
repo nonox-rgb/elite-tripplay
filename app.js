@@ -1,4 +1,3 @@
-
 /* ==========================================================================
    Elite TripPlay — app.js
    Logique de l'app shell. Pas de framework : DOM natif, léger, offline-friendly.
@@ -534,4 +533,25 @@ function updateSpeedo(speedKmh) {
 
 async function requestWakeLock() {
   try {
-   
+    if ("wakeLock" in navigator) {
+      wakeLockRef = await navigator.wakeLock.request("screen");
+    }
+  } catch (e) {
+    // Refusé (ex : batterie faible) — le suivi continue quand même tant
+    // que l'onglet reste ouvert, l'écran pourra juste s'éteindre.
+  }
+}
+
+function releaseWakeLock() {
+  wakeLockRef?.release?.();
+  wakeLockRef = null;
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && tracking.active) requestWakeLock();
+});
+
+/* ---- Initialisation des nouveaux écrans au chargement ---- */
+
+initWifiScreen();
+updateTrackerStats();
