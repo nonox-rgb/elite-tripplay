@@ -43,6 +43,13 @@ function applyStrings(code) {
   document.getElementById("tripStatusLabel").textContent = s.tripStatus;
   document.getElementById("tripTimeLeft").textContent = s.timeLeft;
   document.getElementById("offlineBanner").textContent = s.offline;
+
+  document.getElementById("trip2Title").textContent = s.myTrip;
+  document.getElementById("trip2RemainingLabel").textContent = s.remaining;
+  document.getElementById("trip2DepartureLabel").textContent = s.departure;
+  document.getElementById("trip2ArrivalLabel").textContent = s.arrival;
+  document.getElementById("trip2DurationLabel").childNodes[0].textContent = s.duration + " ";
+  document.getElementById("trip2DistanceLabel").childNodes[0].textContent = s.distance + " ";
 }
 
 continueBtn.addEventListener("click", () => {
@@ -69,16 +76,27 @@ function goToScreen(name) {
 /* Sidebar dashboard                                                       */
 /* ---------------------------------------------------------------------- */
 
+// Ecrans déjà intégrés, mappés depuis data-target de la sidebar
+const IMPLEMENTED_SCREENS = { home: "home", trip: "trip" };
+
 document.querySelectorAll(".side-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".side-btn").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     const target = btn.dataset.target;
-    if (target === "home") return;
-    // Les autres écrans (favoris, vidéo, menu, trajet) arrivent au fur et à
+    const screen = IMPLEMENTED_SCREENS[target];
+    if (screen) {
+      goToScreen(screen);
+      return;
+    }
+    // Les écrans restants (favoris, vidéo, menu) arrivent au fur et à
     // mesure que tu m'envoies les maquettes correspondantes.
     showToast("Écran « " + target + " » à venir");
   });
+});
+
+document.getElementById("trip2RefreshBtn")?.addEventListener("click", () => {
+  showToast("Actualisation du trajet — à connecter au GPS");
 });
 
 /* ---------------------------------------------------------------------- */
@@ -97,7 +115,8 @@ document.getElementById("loginBtn")?.addEventListener("click", () => {
 });
 
 document.getElementById("tripTrackerBtn")?.addEventListener("click", () => {
-  showToast("Trip Tracker — à implémenter");
+  document.querySelectorAll(".side-btn").forEach((b) => b.classList.toggle("active", b.dataset.target === "trip"));
+  goToScreen("trip");
 });
 
 /* ---------------------------------------------------------------------- */
