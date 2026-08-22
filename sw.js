@@ -5,7 +5,7 @@
    déploiement pour forcer la mise à jour du cache chez les utilisateurs.
    ========================================================================== */
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const CACHE_NAME = "elite-tripplay-" + CACHE_VERSION;
 
 const APP_SHELL = [
@@ -51,8 +51,9 @@ self.addEventListener("fetch", (event) => {
 
       return fetch(request)
         .then((response) => {
-          // Met en cache les nouvelles ressources same-origin au fil de l'eau
-          if (response.ok && new URL(request.url).origin === self.location.origin) {
+          const url = new URL(request.url);
+          const cacheable = response.ok && (url.origin === self.location.origin || url.hostname === "unpkg.com");
+          if (cacheable) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
