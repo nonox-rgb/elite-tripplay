@@ -16,6 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="TripPlay" />
 
 <link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
@@ -40,7 +41,7 @@
   </div>
 
   <div class="lang-grid" id="langGrid">
-    <!-- généré par app.js à partir de LANGUAGES dans i18n.js -->
+    <!-- généré par js/app.js à partir de LANGUAGES dans js/i18n.js -->
   </div>
 
   <button class="lang-continue" id="continueBtn" disabled>CONTINUE</button>
@@ -139,7 +140,7 @@
     </div>
 
     <!-- Wifi -->
-    <div class="card card-tile tappable" data-action="wifi">
+    <div class="card card-tile tappable" data-action="wifi-screen">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5a11 11 0 0 1 14 0"/><path d="M8.2 16a6.5 6.5 0 0 1 7.6 0"/><path d="M11.5 19.4a2 2 0 0 1 1 0"/></svg>
       <span class="tile-label">WI-FI</span>
     </div>
@@ -171,72 +172,188 @@
 </section>
 
 <!-- ============================================================
-     ECRAN 3 — Mon Voyage (Trip Tracker)
+     ECRAN 3 — Mon Voyage (aperçu du trajet)
      ============================================================ -->
 <section class="screen" id="screen-trip">
 
-  <div class="trip2-header">
-    <h1 id="trip2Title">Mon Voyage</h1>
-    <button class="trip-tracker-btn trip2-btn" id="trip2RefreshBtn">TRIP TRACKER</button>
+  <!-- Sidebar (identique à l'accueil) -->
+  <nav class="sidebar">
+    <button class="side-btn" data-target="home" aria-label="Accueil">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+    </button>
+    <button class="side-btn" data-target="favorites" aria-label="Favoris">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.3 6.2 21l1.6-6.9L2.5 9.4l7-0.6L12 2.5l2.5 6.3 7 .6-5.3 4.7L18 21Z"/></svg>
+    </button>
+    <button class="side-btn" data-target="video" aria-label="Divertissement">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3Z" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <button class="side-btn" data-target="menu" aria-label="Pauses / restauration">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v8a2 2 0 0 0 2 2 2 2 0 0 0 2-2V2"/><path d="M8 12v10"/><path d="M17 2c-1.7 0-3 2-3 5s1.3 5 3 5v10"/></svg>
+    </button>
+    <button class="side-btn active" data-target="trip" aria-label="Suivi du trajet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 21 19 12 15.5 3 19Z"/></svg>
+    </button>
+    <img class="side-logo" src="icon-96.png" alt="" />
+  </nav>
+
+  <div class="trip2-main">
+    <div class="trip2-header">
+      <h1 id="trip2Title">Mon Voyage</h1>
+      <button class="trip-tracker-btn trip2-btn" id="trip2OpenTrackerBtn">TRIP TRACKER</button>
+    </div>
+
+    <div class="trip2-stats">
+      <div class="trip2-stat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM5 13l1.5-5A2 2 0 0 1 8.4 6.5h7.2a2 2 0 0 1 1.9 1.5L19 13H5Z"/></svg>
+        <span id="trip2Vehicle">Clio 5</span>
+      </div>
+      <div class="trip2-stat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <span id="trip2DurationLabel">Duration <span id="trip2Duration">--h --m</span></span>
+      </div>
+      <div class="trip2-stat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.4 7-12a7 7 0 1 0-14 0c0 5.6 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <span id="trip2DistanceLabel">Distance <span id="trip2Distance">---- km</span></span>
+      </div>
+    </div>
+
+    <div class="trip2-remaining">
+      <p class="trip2-remaining-label" id="trip2RemainingLabel">Time Remaining</p>
+      <p class="trip2-remaining-value" id="trip2RemainingValue">--h --m</p>
+    </div>
+
+    <div class="trip2-progress">
+      <div class="trip2-endpoint">
+        <span class="trip2-endpoint-label" id="trip2DepartureLabel">Departure</span>
+        <span class="trip2-endpoint-time" id="trip2DepTime">--:--</span>
+      </div>
+      <div class="trip2-track">
+        <div class="trip2-track-fill" style="--progress:0%"></div>
+        <span class="trip2-dot start"></span>
+        <span class="trip2-dot end"></span>
+      </div>
+      <div class="trip2-endpoint right">
+        <span class="trip2-endpoint-label" id="trip2ArrivalLabel">Arrival</span>
+        <span class="trip2-endpoint-time" id="trip2ArrTime">--:--</span>
+      </div>
+    </div>
+
+    <!-- Route simplifiée (remplace l'ancien globe, buggé) -->
+    <div class="trip2-route-simple">
+      <span class="route-point-label">----</span>
+      <div class="route-line">
+        <span class="route-dot"></span>
+        <span class="route-dot"></span>
+      </div>
+      <span class="route-point-label">----</span>
+    </div>
   </div>
+</section>
 
-  <div class="trip2-stats">
-    <div class="trip2-stat">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM5 13l1.5-5A2 2 0 0 1 8.4 6.5h7.2a2 2 0 0 1 1.9 1.5L19 13H5Z"/></svg>
-      <span id="trip2Vehicle">Clio 5</span>
-    </div>
-    <div class="trip2-stat">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-      <span id="trip2DurationLabel">Duration <span id="trip2Duration">--h --m</span></span>
-    </div>
-    <div class="trip2-stat">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.4 7-12a7 7 0 1 0-14 0c0 5.6 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>
-      <span id="trip2DistanceLabel">Distance <span id="trip2Distance">---- km</span></span>
-    </div>
-  </div>
+<!-- ============================================================
+     ECRAN 4 — Trip Tracker (suivi GPS en direct)
+     ============================================================ -->
+<section class="screen" id="screen-tracker">
 
-  <div class="trip2-remaining">
-    <p class="trip2-remaining-label" id="trip2RemainingLabel">Time Remaining</p>
-    <p class="trip2-remaining-value" id="trip2RemainingValue">2h 56m</p>
-  </div>
+  <button class="back-btn" id="trackerBackBtn" aria-label="Retour">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+  </button>
 
-  <div class="trip2-progress">
-    <div class="trip2-endpoint">
-      <span class="trip2-endpoint-label" id="trip2DepartureLabel">Departure</span>
-      <span class="trip2-endpoint-time" id="trip2DepTime">--:--</span>
-    </div>
-    <div class="trip2-track">
-      <div class="trip2-track-fill" style="--progress:0%"></div>
-      <span class="trip2-dot start"></span>
-      <span class="trip2-dot end"></span>
-    </div>
-    <div class="trip2-endpoint right">
-      <span class="trip2-endpoint-label" id="trip2ArrivalLabel">Arrival</span>
-      <span class="trip2-endpoint-time" id="trip2ArrTime">--:--</span>
-    </div>
-  </div>
-
-  <div class="trip2-globe-wrap">
-    <div class="trip2-globe">
-      <div class="globe-blob b1"></div>
-      <div class="globe-blob b2"></div>
-      <div class="globe-blob b3"></div>
-
-      <svg class="trip2-route" viewBox="0 0 1000 500" preserveAspectRatio="none">
-        <path d="M 220 300 Q 550 100 850 400" fill="none" stroke="#ffffff" stroke-width="3" />
-        <circle cx="220" cy="300" r="7" fill="#ffffff" />
-        <circle cx="850" cy="400" r="7" fill="#ffffff" />
+  <div class="tracker-layout">
+    <!-- Compteur de vitesse analogique -->
+    <div class="tracker-speedo">
+      <svg viewBox="0 0 200 200" class="speedo-svg">
+        <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
+        <path id="speedoArc" d="" fill="none" stroke="url(#speedoGrad)" stroke-width="10" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="speedoGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#e5134f"/>
+            <stop offset="1" stop-color="#ff2f9e"/>
+          </linearGradient>
+        </defs>
+        <g id="speedoTicks"></g>
+        <line id="speedoNeedle" x1="100" y1="100" x2="100" y2="30" stroke="#fff" stroke-width="3" stroke-linecap="round" transform="rotate(-120 100 100)"/>
+        <circle cx="100" cy="100" r="7" fill="#fff"/>
       </svg>
-
-      <div class="globe-label" style="left:22%; top:52%;">
-        <span class="globe-code">----</span>
-        <span id="trip2DepCity">Berlin</span>
+      <div class="speedo-readout">
+        <span id="speedoValue">0</span>
+        <span class="speedo-unit">km/h</span>
       </div>
-      <div class="globe-label" style="left:87%; top:74%;">
-        <span class="globe-code">----</span>
-      </div>
-      <div class="globe-caption" style="left:8%; top:82%;" id="trip2ArrCity">Madrid</div>
     </div>
+
+    <!-- Carte -->
+    <div class="tracker-map-wrap">
+      <div id="trackerMap"></div>
+      <div class="map-controls">
+        <button class="map-btn" id="mapRecenterBtn" aria-label="Recentrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </button>
+        <button class="map-btn" id="mapSatelliteBtn" aria-label="Basculer satellite">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tracker-stats">
+    <div class="tracker-stat">
+      <span class="tracker-stat-label" id="trackerAvgLabel">Vitesse moyenne</span>
+      <span class="tracker-stat-value" id="trackerAvgSpeed">-- km/h</span>
+    </div>
+    <div class="tracker-stat">
+      <span class="tracker-stat-label" id="trackerMaxLabel">Vitesse max</span>
+      <span class="tracker-stat-value" id="trackerMaxSpeed">-- km/h</span>
+    </div>
+    <div class="tracker-stat">
+      <span class="tracker-stat-label" id="trackerDistLabel">Distance parcourue</span>
+      <span class="tracker-stat-value" id="trackerDistance">-- km</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     ECRAN 5 — Wi-Fi
+     ============================================================ -->
+<section class="screen" id="screen-wifi">
+
+  <button class="back-btn" id="wifiBackBtn" aria-label="Retour">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+  </button>
+
+  <div class="wifi-panel">
+    <h1 id="wifiTitle">Wi-Fi</h1>
+
+    <div class="wifi-row">
+      <span class="wifi-row-label" id="wifiNameLabel">Nom du réseau</span>
+      <div class="wifi-row-value editable">
+        <input type="text" id="wifiNameInput" placeholder="Ex : Clio_5G" maxlength="40" />
+        <button class="wifi-mini-btn" id="wifiNameSaveBtn" aria-label="Enregistrer">✓</button>
+      </div>
+    </div>
+
+    <div class="wifi-row">
+      <span class="wifi-row-label" id="wifiTypeLabel">Type de connexion</span>
+      <span class="wifi-row-value" id="wifiType">--</span>
+    </div>
+
+    <div class="wifi-row">
+      <span class="wifi-row-label" id="wifiEstimateLabel">Estimation du navigateur</span>
+      <span class="wifi-row-value" id="wifiEstimate">--</span>
+    </div>
+
+    <div class="wifi-row">
+      <span class="wifi-row-label" id="wifiPingLabel">Ping</span>
+      <span class="wifi-row-value" id="wifiPing">--</span>
+      <button class="wifi-test-btn" id="wifiPingBtn">Mesurer</button>
+    </div>
+
+    <div class="wifi-row">
+      <span class="wifi-row-label" id="wifiSpeedLabel">Débit mesuré</span>
+      <span class="wifi-row-value" id="wifiSpeed">--</span>
+      <button class="wifi-test-btn" id="wifiSpeedBtn">Tester</button>
+    </div>
+
+    <p class="wifi-note" id="wifiNote">Le débit mesuré correspond à la vitesse vers ce site, pas à un test internet général. Les tests nécessitent une connexion active.</p>
   </div>
 </section>
 
@@ -257,15 +374,4 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
     </button>
     <button class="bar-btn" id="btnVolume" aria-label="Volume">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
-    </button>
-    <button class="bar-btn" id="btnBrightness" aria-label="Luminosité">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-    </button>
-  </div>
-</nav>
-
-<script src="i18n.js"></script>
-<script src="app.js"></script>
-</body>
-</html>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
