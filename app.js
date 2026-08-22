@@ -1,3 +1,4 @@
+window.onerror = function(msg, url, line) { alert("Erreur JS : " + msg + " (ligne " + line + ")"); };
 /* ==========================================================================
    Elite TripPlay — app.js
    Logique de l'app shell. Pas de framework : DOM natif, léger, offline-friendly.
