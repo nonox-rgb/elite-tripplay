@@ -917,4 +917,81 @@ img { display: block; max-width: 100%; }
 .wifi-row-value input {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--card-border);
-  border-r
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  width: 160px;
+}
+
+.wifi-mini-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-gradient);
+  font-weight: 800;
+}
+
+.wifi-test-btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--card-border);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.wifi-test-btn:active { background: var(--accent-gradient); }
+
+.wifi-note {
+  margin-top: 2vh;
+  font-size: 12px;
+  color: var(--text-faint);
+  line-height: 1.5;
+}
+
+.tracker-dot-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 6px rgba(255, 47, 158, 0.25);
+}
+
+/* ==========================================================================
+   Responsive — repli tablette portrait / téléphone
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .lang-grid { grid-template-columns: repeat(2, 1fr); }
+
+  #screen-home, #screen-trip { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+  .sidebar { width: 100%; flex-direction: row; justify-content: center; }
+  .sidebar .side-logo { display: none; }
+  .main-col, .trip2-main { padding: 2vh 0; }
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: none;
+    height: auto;
+  }
+  .card-wide { grid-column: span 2; }
+  .card { min-height: 130px; }
+
+  .tracker-layout { flex-direction: column; }
+  .tracker-speedo { width: 100%; min-height: 200px; }
+}
+
+@media (max-width: 560px) {
+  .lang-grid { grid-template-columns: 1fr; }
+  .card-grid { grid-template-columns: 1fr; }
+  .card-wide { grid-column: span 1; }
+}
+
+/* Respect des préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
