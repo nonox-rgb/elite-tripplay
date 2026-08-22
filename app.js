@@ -100,13 +100,33 @@ document.getElementById("trip2RefreshBtn")?.addEventListener("click", () => {
 });
 
 /* ---------------------------------------------------------------------- */
-/* Cartes du dashboard (placeholders tant que les écrans détaillés         */
-/* n'existent pas)                                                         */
+/* Cartes du dashboard                                                     */
 /* ---------------------------------------------------------------------- */
+
+// Ces services ne peuvent pas être intégrés dans l'app (restrictions des
+// plateformes) : on ouvre l'appli installée sur la tablette, ou le site
+// dans un nouvel onglet si elle n'est pas installée.
+const EXTERNAL_APPS = {
+  video: "https://www.youtube.com/",
+  "app-streaming": "https://www.netflix.com/",
+  "app-music": "https://open.spotify.com/",
+};
 
 document.querySelectorAll(".card[data-action], .card-tile[data-action]").forEach((card) => {
   card.addEventListener("click", () => {
-    showToast("« " + card.dataset.action + " » — écran à construire");
+    const action = card.dataset.action;
+    const url = EXTERNAL_APPS[action];
+
+    if (url) {
+      if (!navigator.onLine) {
+        showToast("Connexion internet nécessaire pour ouvrir cette appli");
+        return;
+      }
+      window.open(url, "_blank", "noopener");
+      return;
+    }
+
+    showToast("« " + action + " » — écran à construire");
   });
 });
 
