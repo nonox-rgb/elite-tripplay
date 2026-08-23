@@ -1,4 +1,3 @@
-window.onerror = function(msg, url, line) { alert("Erreur JS : " + msg + " (ligne " + line + ")"); };
 /* ==========================================================================
    Elite TripPlay — app.js
    Logique de l'app shell. Pas de framework : DOM natif, léger, offline-friendly.
@@ -324,7 +323,22 @@ const tracking = loadTrackingState();
 function loadTrackingState() {
   try {
     const raw = localStorage.getItem(TRACKING_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const state = JSON.parse(raw);
+      // Un watchPosition ne survit jamais à un rechargement de page : on
+      // repart toujours avec active=false, sinon startTracking() croit
+      // qu'un suivi tourne déjà et ne relance jamais le GPS (c'était le bug).
+      state.active = false;
+      state.watchId = null;
+
+      // Si le dernier point date de plus de 3h, c'est un nouveau trajet :
+      // on repart de zéro plutôt que de mélanger les deux.
+      const lastPoint = state.points?.[state.points.length - 1];
+      if (lastPoint && Date.now() - lastPoint.t > 3 * 3_600_000) {
+        return { active: false, points: [], distanceKm: 0, maxSpeedKmh: 0, startedAt: null, watchId: null };
+      }
+      return state;
+    }
   } catch (e) {}
   return { active: false, points: [], distanceKm: 0, maxSpeedKmh: 0, startedAt: null, watchId: null };
 }
@@ -552,7 +566,67 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && tracking.active) requestWakeLock();
 });
 
+/* ==========================================================================
+   Météo extérieure (tuile "Température extérieure")
+   ========================================================================== */
+
+const WEATHER_KEY = "elite-tripplay:weather";
+const WEATHER_MAX_AGE_MS = 10 * 60 * 1000; // 10 min
+
+function loadCachedWeather() {
+  try {
+    const raw = localStorage.getItem(WEATHER_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return null;
+}
+
+function renderTemp(value) {
+  const el = document.getElementById("tempValue");
+  if (!el) return;
+  el.textContent = typeof value === "number" ? Math.round(value) + "°C" : "--°C";
+}
+
+function initWeather() {
+  const cached = loadCachedWeather();
+  if (cached) renderTemp(cached.temp);
+
+  // Pas la peine de retaper l'API si on a déjà une donnée récente
+  if (cached && Date.now() - cached.t < WEATHER_MAX_AGE_MS) return;
+
+  if (!("geolocation" in navigator)) {
+    showToast("Géolocalisation indisponible pour la météo");
+    return;
+  }
+  if (!navigator.onLine) return; // pas de toast : cas normal hors-ligne
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+    (err) => showToast("Météo : position refusée (" + err.message + ")"),
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+  );
+}
+
+async function fetchWeather(lat, lon) {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&timezone=auto`;
+    const res = await fetch(url);
+    if (!res.ok) { showToast("Météo : erreur serveur (" + res.status + ")"); return; }
+    const data = await res.json();
+    const temp = data?.current?.temperature_2m;
+    if (typeof temp === "number") {
+      renderTemp(temp);
+      localStorage.setItem(WEATHER_KEY, JSON.stringify({ temp, t: Date.now() }));
+    } else {
+      showToast("Météo : réponse inattendue de l'API");
+    }
+  } catch (e) {
+    showToast("Météo : requête échouée (" + e.message + ")");
+  }
+}
+
 /* ---- Initialisation des nouveaux écrans au chargement ---- */
 
 initWifiScreen();
 updateTrackerStats();
+initWeather();
